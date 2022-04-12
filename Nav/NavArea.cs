@@ -28,6 +28,22 @@ namespace CSGOAutoPlaces.Nav
         public uint AreaBindCount;
         public AreaBind[] AreaBinds; // length = count
         public uint AreaIdVisInherit;
+
+        public AABB GetAABB()
+        {
+            Vector3 min = new Vector3();
+            Vector3 max = new Vector3();
+
+            min.X = Math.Min(NorthWestCorner.X, SouthEastCorner.X);
+            min.Y = Math.Min(NorthWestCorner.Y, SouthEastCorner.Y);
+            min.Z = Math.Min(NorthWestCorner.Z, SouthEastCorner.Z);
+            max.X = Math.Max(NorthWestCorner.X, SouthEastCorner.X);
+            max.Y = Math.Max(NorthWestCorner.Y, SouthEastCorner.Y);
+            max.Z = Math.Max(NorthWestCorner.Z, SouthEastCorner.Z);
+
+            return new AABB() { Min = min, Max = max };
+        }
+
         public void DeSerialize(BinaryReader reader)
         {
             Id = reader.ReadUInt32();

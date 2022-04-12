@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CSGOAutoPlaces.Nav
 {
-    struct NavFile
+    class NavFile
     {
         public uint MagicNumber;
         public uint Version;
@@ -20,6 +20,23 @@ namespace CSGOAutoPlaces.Nav
         public uint LadderCount;
         public NavLadder[] Ladders; // length = count
         public byte[] CustomData; // length = eos
+
+        public NavFile(string filePath)
+        {
+            using (var reader = new BinaryReader(new FileStream(filePath, FileMode.Open)))
+            {
+                DeSerialize(reader);
+            }
+        }
+
+        public void SaveToFile(string filePath)
+        {
+            using (var writer = new BinaryWriter(new FileStream(filePath, FileMode.Create)))
+            {
+                Serialize(writer);
+            } 
+        }
+
 
         public void DeSerialize(BinaryReader reader)
         {
@@ -83,7 +100,7 @@ namespace CSGOAutoPlaces.Nav
 
             foreach(var ladder in Ladders)
             {
-                ladder.Serialize();
+                ladder.Serialize(writer);
             }
             writer.Write(CustomData);
         }
