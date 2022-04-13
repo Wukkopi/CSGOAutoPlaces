@@ -2,6 +2,7 @@
 using CSGOAutoPlaces.Vmf;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace CSGOAutoPlaces
 {
@@ -69,12 +70,15 @@ namespace CSGOAutoPlaces
                 Console.WriteLine($"\t{nav.Places[i].Name}");
             }
 
-            Console.WriteLine($"{p.Solids.Count} solids with places found.");
+            // filter all solids that have ap_ visgroup. note: if solid has more visgroups assigned, only first one is considered.
+            var apSolids = p.Solids.FindAll(s => p.VisGroups.Select(v => v.VisGroupId).Contains(s.VisGroupId));
+
+            Console.WriteLine($"{apSolids.Count} solids with places found.");
 
             Console.WriteLine("Applying places...");
             for(var i = 0; i < nav.Areas.Length; i++)
             {
-                foreach (var solid in p.Solids)
+                foreach (var solid in apSolids)
                 {
                     if (nav.Areas[i].GetAABB().CollidesWith(solid.AABB))
                     {
