@@ -17,8 +17,6 @@ namespace CSGOAutoPlaces.Nav
         public AreaIdArray[] ConnectionData; // length = 4
         public byte HidingSpotCount;
         public HidingSpot[] HidingSpots; // length = count
-        //public byte ApproachInfoCount; // removed in v15
-        //public ApproachInfo[] 
         public uint EncounterPathCount;
         public EncounterPath[] EncounterPaths; // length = count
         public ushort PlaceId;
@@ -28,6 +26,8 @@ namespace CSGOAutoPlaces.Nav
         public uint AreaBindCount;
         public AreaBind[] AreaBinds; // length = count
         public uint AreaIdVisInherit;
+        public byte ApproachInfoCount; // removed in v15 --> sus
+        public ApproachInfo[] ApproachInfos;
 
         public AABB GetAABB()
         {
@@ -73,9 +73,6 @@ namespace CSGOAutoPlaces.Nav
                 HidingSpots[i].DeSerialize(reader);
             }
 
-            // byte ApproachInfoCount; // removed in v15
-            // ApproachInfo[] 
-
             EncounterPathCount = reader.ReadUInt32();
             EncounterPaths = new EncounterPath[EncounterPathCount];
             for (var i = 0; i < EncounterPathCount; i++)
@@ -107,7 +104,13 @@ namespace CSGOAutoPlaces.Nav
             }
 
             AreaIdVisInherit = reader.ReadUInt32();
-            reader.ReadByte(); //Discard a byte
+
+            ApproachInfoCount = reader.ReadByte(); // removed in v15? --> sus
+            ApproachInfos = new ApproachInfo[ApproachInfoCount];
+            for (var i = 0; i < ApproachInfoCount; i++)
+            {
+                ApproachInfos[i].DeSerialize(reader);
+            }
         }
 
         public void Serialize(BinaryWriter writer)
@@ -137,9 +140,6 @@ namespace CSGOAutoPlaces.Nav
                 hidingSpot.Serialize(writer);
             }
 
-            // byte ApproachInfoCount; // removed in v15
-            // ApproachInfo[] 
-
             writer.Write(EncounterPathCount);
             foreach(var encounterPath in EncounterPaths)
             {
@@ -168,7 +168,12 @@ namespace CSGOAutoPlaces.Nav
             }
 
             writer.Write(AreaIdVisInherit);
-            writer.Write((byte)0); 
+
+            writer.Write(ApproachInfoCount);
+            foreach (var approachInfo in ApproachInfos)
+            {
+                approachInfo.Serialize(writer);
+            }
         }
     }
 }
