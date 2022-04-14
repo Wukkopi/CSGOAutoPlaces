@@ -70,8 +70,8 @@ namespace CSGOAutoPlaces.Vmf
         }
         private void ParseAABB()
         {
-            Vector3 min = new Vector3();
-            Vector3 max = new Vector3();
+            Vector3 min = Vector3.One * float.MaxValue;
+            Vector3 max = Vector3.One * float.MinValue;
             foreach (var v in Vertices)
             {
                 min.X = Math.Min(v.X, min.X);
