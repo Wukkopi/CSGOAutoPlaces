@@ -37,7 +37,6 @@ namespace CSGOAutoPlaces.Nav
             } 
         }
 
-
         public void DeSerialize(BinaryReader reader)
         {
             MagicNumber = reader.ReadUInt32();
@@ -105,5 +104,4 @@ namespace CSGOAutoPlaces.Nav
             writer.Write(CustomData);
         }
     }
-
 }
