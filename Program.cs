@@ -1,4 +1,6 @@
-﻿using CSGOAutoPlaces.Nav;
+﻿using CSGOAutoPlaces.Interfaces;
+using CSGOAutoPlaces.Misc;
+using CSGOAutoPlaces.Nav;
 using CSGOAutoPlaces.Vmf;
 using System;
 using System.IO;
@@ -13,26 +15,42 @@ namespace CSGOAutoPlaces
             var deleteFlag = false;
             var vmfFile = string.Empty;
             var navFile = string.Empty;
+            IPaintStrategy paintStrategy = null;
             foreach (var s in args)
             {
-                if (s == "-d")
+                if (s == "-delete")
                 {
                     // remove old nav file
                     deleteFlag = true;
                 }
-                if (s.StartsWith("-vmf="))
+                else if (s.StartsWith("-vmf="))
                 {
                     // vmfFile
                     vmfFile = s.Substring(5);
                 }
-                if (s.StartsWith("-nav="))
+                else if (s.StartsWith("-nav="))
                 {
                     //navFile
                     navFile = s.Substring(5);
                 }
+                else if (s.StartsWith("-strategy="))
+                {
+                    // strategy for painting
+                    var strategy = s.Substring(10);
+                    switch (strategy)
+                    {
+                        case "aabb":
+                            paintStrategy = new AABBPaintStrategy();
+                            break;
+                        case "raycast":
+                            paintStrategy = new RayCastPaintStrategy();
+                            break;
+                    }
+                }
             }
 
             Console.WriteLine($"nav: {navFile} -> {(File.Exists(navFile) ? " Found" : " Not found")}");
+            Console.WriteLine($"vmf: {vmfFile} -> {(File.Exists(vmfFile) ? " Found" : " Not found")}");
 
             if (deleteFlag)
             {
@@ -44,11 +62,9 @@ namespace CSGOAutoPlaces
 
             var files = File.Exists(vmfFile) && File.Exists(navFile);
 
-            Console.WriteLine($"vmf: {vmfFile} -> {(File.Exists(vmfFile) ? " Found" : " Not found")}");
-
             if (!files)
             {
-                Console.WriteLine("One file wasn't found. Cancelling.");
+                Console.WriteLine("Required file wasn't found. Cancelling.");
                 return;
             }
 
@@ -56,47 +72,29 @@ namespace CSGOAutoPlaces
             NavFile nav = new NavFile(navFile);
 
             Console.WriteLine("Parsing vmf for places...\n");
-            VmfParser p = new VmfParser(vmfFile);
+            ParsedVmf vmf = new ParsedVmf(vmfFile);
             
             // insert places
-            nav.Places = new PlaceName[p.VisGroups.Count];
-            nav.PlaceCount = (ushort)p.VisGroups.Count;
+            nav.Places = new PlaceName[vmf.VisGroups.Count];
+            nav.PlaceCount = (ushort)vmf.VisGroups.Count;
             
             Console.WriteLine($"{nav.PlaceCount} places found:");
             for(var i = 0; i < nav.PlaceCount; i++)
             {
-                nav.Places[i].Name = p.VisGroups[i].Name.Substring(3) + "\0";
+                nav.Places[i].Name = vmf.VisGroups[i].Name.Substring(3) + "\0";
                 nav.Places[i].Length = (ushort)nav.Places[i].Name.Length;
                 Console.WriteLine($"\t{nav.Places[i].Name}");
             }
 
             // filter all solids that have ap_ visgroup. note: if solid has more visgroups assigned, only first one is considered.
-            var apSolids = p.Solids.FindAll(s => p.VisGroups.Select(v => v.VisGroupId).Contains(s.VisGroupId));
+            var apSolids = vmf.Solids.FindAll(s => vmf.VisGroups.Select(v => v.VisGroupId).Contains(s.VisGroupId));
 
             Console.WriteLine($"{apSolids.Count} solids with places found.");
 
             Console.WriteLine("Applying places...");
-            for(var i = 0; i < nav.Areas.Length; i++)
-            {
-                foreach (var solid in apSolids)
-                {
-                    if (nav.Areas[i].GetAABB().CollidesWith(solid.AABB))
-                    {
-                        // PIHVI
-                        // +1 because placename 0 is "no name"
-                        var id = p.VisGroups.FindIndex(v => v.VisGroupId == solid.VisGroupId) + 1;
-                        nav.Areas[i].PlaceId = (ushort)id;
-                        Console.Write("*");
-                        break;
-                    }
-                    else
-                    {
-                        // unset place
-                        nav.Areas[i].PlaceId = 0;
-                        Console.Write(".");
-                    }
-                }
-            }
+
+            paintStrategy.PaintPlaceNames(vmf, nav, apSolids);
+
             Console.WriteLine("\nSaving nav file...");
             nav.SaveToFile(navFile);
             Console.WriteLine("Done!");
