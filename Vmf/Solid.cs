@@ -1,4 +1,5 @@
 ﻿using CSGOAutoPlaces.Misc;
+using MIConvexHull;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace CSGOAutoPlaces.Vmf
         private void ParseVertices(string solidBlock)
         {
             Vertices = new List<Vector3>();
-            Triangles = new List<Triangle>();
+
             var lines = solidBlock.Split('\n');
             foreach (var line in lines)
             {
@@ -36,12 +37,41 @@ namespace CSGOAutoPlaces.Vmf
                         {
                             Vertices.Add(new Vector3(coords[i], coords[i + 1], coords[i + 2]));
                         }
-                        Triangles.Add(new Triangle(Vertices[^3], Vertices[^2], Vertices[^1]));
                     }
                 }
             }
             Vertices = Vertices.Distinct().ToList();
         }
+
+        private void ParseTriangles()
+        {
+            Triangles = new List<Triangle>();
+
+            // build convex hull with 3rd party library
+            var vertexData = new DefaultVertex[Vertices.Count];
+            for(int i = 0; i < Vertices.Count; i++)
+            {
+                vertexData[i] = new DefaultVertex()
+                {
+                    Position = new double[3]
+                    {
+                        Vertices[i].X, Vertices[i].Y, Vertices[i].Z
+                    }
+                };
+            }
+
+            var hull = ConvexHull.Create(vertexData);
+            foreach (var face in hull.Result.Faces)
+            {
+                Triangles.Add(new Triangle(
+                    face.Vertices[0].ToVector3(),
+                    face.Vertices[1].ToVector3(),
+                    face.Vertices[2].ToVector3()
+                    )
+                );
+            }
+        }
+
         private void ParseAABB()
         {
             Vector3 min = Vector3.One * float.MaxValue;
@@ -71,6 +101,7 @@ namespace CSGOAutoPlaces.Vmf
                 return result;
             }
             result.ParseVertices(solidBlock);
+            result.ParseTriangles();
             result.ParseAABB();
             return result;
         }

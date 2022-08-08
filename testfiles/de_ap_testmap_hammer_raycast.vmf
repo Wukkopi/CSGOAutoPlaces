@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "9324"
-	"mapversion" "22"
+	"mapversion" "23"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -50,7 +50,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "22"
+	"mapversion" "23"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -1124,6 +1124,7 @@ world
 		editor
 		{
 			"color" "0 222 215"
+			"visgroupid" "19"
 			"visgroupshown" "1"
 			"visgroupautoshown" "1"
 		}
@@ -1200,6 +1201,7 @@ world
 		editor
 		{
 			"color" "0 222 215"
+			"visgroupid" "19"
 			"visgroupshown" "1"
 			"visgroupautoshown" "1"
 		}
@@ -1353,6 +1355,7 @@ world
 		editor
 		{
 			"color" "0 222 215"
+			"visgroupid" "19"
 			"visgroupshown" "1"
 			"visgroupautoshown" "1"
 		}
@@ -1429,6 +1432,7 @@ world
 		editor
 		{
 			"color" "0 222 215"
+			"visgroupid" "19"
 			"visgroupshown" "1"
 			"visgroupautoshown" "1"
 		}

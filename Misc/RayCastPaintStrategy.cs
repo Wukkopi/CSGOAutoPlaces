@@ -10,6 +10,7 @@ namespace CSGOAutoPlaces.Misc
 {
     class RayCastPaintStrategy : IPaintStrategy
     {
+        private const float WaistHeight = 16f;
         public void PaintPlaceNames(ParsedVmf vmf, NavFile nav, List<Solid> apSolids)
         {
             for (var i = 0; i < nav.Areas.Length; i++)
@@ -22,8 +23,8 @@ namespace CSGOAutoPlaces.Misc
                     foreach (var triangle in solid.Triangles)
                     {
                         // raycast down from the center of navarea
-                        float? hit = IntersectRayTriangle(new Ray(navCenter, -Vector3.UnitY), triangle);
-                        if (hit != null && hit < bestHit)
+                        float? hit = IntersectRayTriangle(new Ray(navCenter + Vector3.UnitZ * WaistHeight, -Vector3.UnitZ), triangle);
+                        if (hit != null && (hit < bestHit || bestHit == null))
                         {
                             bestHit = hit;
                             bestSolid = solid;
@@ -37,7 +38,6 @@ namespace CSGOAutoPlaces.Misc
                     var id = vmf.VisGroups.FindIndex(v => v.VisGroupId == bestSolid?.VisGroupId) + 1;
                     nav.Areas[i].PlaceId = (ushort)id;
                     Console.Write("*");
-                    break;
                 }
                 else
                 {
