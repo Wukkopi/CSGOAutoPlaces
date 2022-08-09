@@ -49,6 +49,9 @@ namespace CSGOAutoPlaces
                 }
             }
 
+            // assign Raycast painting as default.
+            paintStrategy ??= new RayCastPaintStrategy();
+
             Console.WriteLine($"nav: {navFile} -> {(File.Exists(navFile) ? " Found" : " Not found")}");
             Console.WriteLine($"vmf: {vmfFile} -> {(File.Exists(vmfFile) ? " Found" : " Not found")}");
 
@@ -70,6 +73,8 @@ namespace CSGOAutoPlaces
 
             Console.WriteLine("Parsing nav...");
             NavFile nav = new NavFile(navFile);
+
+            Console.WriteLine($"{nav.AreaCount} Nav areas found");
 
             Console.WriteLine("Parsing vmf for places...\n");
             ParsedVmf vmf = new ParsedVmf(vmfFile);

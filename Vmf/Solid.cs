@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CSGOAutoPlaces.Misc;
+using MIConvexHull;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -10,12 +12,14 @@ namespace CSGOAutoPlaces.Vmf
     public struct Solid
     {
         public List<Vector3> Vertices { get; private set; }
+        public List<Triangle> Triangles { get; private set; }
         public uint VisGroupId { get; private set; }
         public AABB AABB { get; private set; }
 
         private void ParseVertices(string solidBlock)
         {
             Vertices = new List<Vector3>();
+
             var lines = solidBlock.Split('\n');
             foreach (var line in lines)
             {
@@ -38,6 +42,36 @@ namespace CSGOAutoPlaces.Vmf
             }
             Vertices = Vertices.Distinct().ToList();
         }
+
+        private void ParseTriangles()
+        {
+            Triangles = new List<Triangle>();
+
+            // build convex hull with 3rd party library
+            var vertexData = new DefaultVertex[Vertices.Count];
+            for(int i = 0; i < Vertices.Count; i++)
+            {
+                vertexData[i] = new DefaultVertex()
+                {
+                    Position = new double[3]
+                    {
+                        Vertices[i].X, Vertices[i].Y, Vertices[i].Z
+                    }
+                };
+            }
+
+            var hull = ConvexHull.Create(vertexData);
+            foreach (var face in hull.Result.Faces)
+            {
+                Triangles.Add(new Triangle(
+                    face.Vertices[0].ToVector3(),
+                    face.Vertices[1].ToVector3(),
+                    face.Vertices[2].ToVector3()
+                    )
+                );
+            }
+        }
+
         private void ParseAABB()
         {
             Vector3 min = Vector3.One * float.MaxValue;
@@ -67,6 +101,7 @@ namespace CSGOAutoPlaces.Vmf
                 return result;
             }
             result.ParseVertices(solidBlock);
+            result.ParseTriangles();
             result.ParseAABB();
             return result;
         }
