@@ -1,3 +1,6 @@
+# Disclaimer
+Since the release of CS2, this tool has become obsolete. For CS2 place names you can create an 'env_cs_place' mesh entity (in similar fashion like this tool allowed for CS:GO) from where you can choose the appropriate place name for the area (https://developer.valvesoftware.com/wiki/Env_cs_place).
+
 # CSGOAutoPlaces
 Tool for map creators to automatically augment placenames into CS:GO nav-file.
 
